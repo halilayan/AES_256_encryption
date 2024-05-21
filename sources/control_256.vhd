@@ -33,7 +33,7 @@ port(
         for_key_exp_sel_o   : out std_logic;
         for_mux_sel_o       : out std_logic_vector (1 downto 0);
         plaintext_ready_o   : out std_logic := '0';
-        key_ready_o         : out std_logic := '0';
+        key_ready_c_o       : out std_logic;
         cipher_text_vld_o   : out std_logic;
         key_exp_enable_o    : out std_logic;
         reg_enable_o        : out std_logic;
@@ -46,9 +46,8 @@ architecture Behavioral of control_256 is
 
 
 type state_type is
-        (plaintext_wait, key_wait_1, key_wait_2, first_round, middle_round, final_round );
-signal control_reg_state, control_next_state : state_type ; --:= plaintext_wait
---signal round_value : std_logic_vector (14 downto 0) := "000000000000000";--(others => '0');
+        (plaintext_wait, key_wait_1, key_wait_2, first_round, middle_round, final_round, done  ); --, done
+signal control_reg_state, control_next_state : state_type ; 
 signal round_reg, round_next : unsigned (3 downto 0) := "0000";
 
 begin
@@ -71,7 +70,7 @@ end process round;
 -- 
 com_atamalar: process(all)
 begin
-    
+
     case control_reg_state is
         
         when plaintext_wait =>
@@ -98,20 +97,28 @@ begin
         when middle_round => 
             if round_next = "1111" then
 				            control_next_state <= final_round;
-				            final_reg_enable <= '1';
 				        else
 				                control_next_state <= middle_round;                              
 				    	end if;
 				    	
+				    	
+--		when final_round =>
+--                if cipher_text_ready_i = '1' then
+--                    control_next_state <= plaintext_wait;
+--                 else
+--                    control_next_state <= final_round;
+--                end if;
+	    	
+				    	
         when final_round => 
-			if cipher_text_ready_i = '1' then
-				            cipher_text_vld_o <= '1';
-				            final_reg_enable <= '1';
-				        else control_next_state <= final_round;
-				        end if;
+			control_next_state <= done;
 				        	
-		when others => 
-			control_next_state <= plaintext_wait;
+		when done => 
+		if cipher_text_ready_i = '1' then
+			            control_next_state <= plaintext_wait;
+				        else
+				        control_next_state <= done;
+				        end if;
     end case;    
 end process com_atamalar;
 
@@ -119,24 +126,28 @@ end process com_atamalar;
 com_islemler: process(all)
 		begin
 		plaintext_ready_o <= '0';
-		key_ready_o <= '0';
+		key_ready_c_o <= '0';
 		key_exp_enable_o <= '0';
 		for_key_exp_sel_o <= '0';
+		final_reg_enable <= '0';
+		cipher_text_vld_o <= '0';
+		reg_enable_o <= '1';
+		
 			case control_reg_state is
 				when plaintext_wait =>
 					plaintext_ready_o <= '1';
 					for_mux_sel_o <= "00";
 					reg_enable_o <= '1';
+					round_next <= (others => '0');
 					   					
 				when key_wait_1 =>
-					key_ready_o <= '1';
+					key_ready_c_o <= '1';
 					
 					  				
 				when key_wait_2 =>
-				    key_ready_o <= '1';
+				    key_ready_c_o <= '1';
 
-				    
-				        				        
+				    				        				        
 				 when first_round => 
 				    for_mux_sel_o <= "00" ;
 				    reg_enable_o <= '1';
@@ -145,9 +156,12 @@ com_islemler: process(all)
 				   
 				    
 				 when middle_round =>
-				    for_mux_sel_o <= "01"; 
 				    key_exp_enable_o <= '1';
 				    round_next <= round_reg + 1;
+				        if round_next = "1111" then
+				            for_mux_sel_o <= "10"; 
+				         else  for_mux_sel_o <= "01";
+				         end if;       
 				        if round_next (0) = '1' then
 				            for_key_exp_sel_o <= '1';   
 				        end if;   
@@ -157,9 +171,16 @@ com_islemler: process(all)
 				    for_mux_sel_o <= "10";
 				    for_key_exp_sel_o <= '0';
 				    key_exp_enable_o <= '1';
-				   
+				    final_reg_enable <= '1';
 				    
-				            				            				                 		
+--				    cipher_text_vld_o <= '1';
+
+				   when done => 
+				                key_exp_enable_o <= '1';     
+				                cipher_text_vld_o <= '1';
+				            
+				        
+				    				            				            				                 		
     end case;
 end process com_islemler;
          
