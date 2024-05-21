@@ -46,20 +46,18 @@ architecture behavioral of AES_256 is
 signal subbytes_out     : std_logic_vector (127 downto 0);
 signal addr_out         : std_logic_vector (127 downto 0);
 signal shiftrows_out    : std_logic_vector (127 downto 0);
-signal key_exp_enable   : std_logic;
 signal for_key_exp_sel_s: std_logic;
 signal data_1_s         : std_logic_vector (127 downto 0);
-signal key_exp_o        : std_logic_vector (127 downto 0);
-signal for_mux_sel_o    : std_logic_vector (1 downto 0);
+signal for_mux_sel_o_s  : std_logic_vector (1 downto 0);
 signal reg_enable       : std_logic;
 signal key_ready_o_s    : std_logic; 
 signal key_exp_enable_s : std_logic;
 signal final_reg_enable : std_logic;
 signal plaintext_ready_o_s : std_logic;
-signal reg_out          : std_logic_vector (127 downto 0);
 signal mix_finish_out   : std_logic_vector (127 downto 0);
 signal register_reg, register_next : std_logic_vector (127 downto 0);
 signal final_reg, final_next       : std_logic_vector (127 downto 0);
+signal cipher_text_vld_o_s         : std_logic;
 
 
 
@@ -98,7 +96,7 @@ port (
         key_vld_i         : in std_logic;
         clk_i             : in std_logic;
         rst_i             : in std_logic;
-        key_ready_o       : in std_logic;
+        key_ready_ke_o    : in std_logic;
         key_exp_enable_i  : in std_logic;
         for_key_exp_sel_i : in std_logic;
         key_exp_o         : out std_logic_vector (127 downto 0)
@@ -115,7 +113,7 @@ port(
         for_key_exp_sel_o   : out std_logic;
         for_mux_sel_o       : out std_logic_vector (1 downto 0);
         plaintext_ready_o   : out std_logic;
-        key_ready_o         : out std_logic;
+        key_ready_c_o       : out std_logic;
         cipher_text_vld_o   : out std_logic;
         key_exp_enable_o    : out std_logic;
         final_reg_enable    : out std_logic;
@@ -157,7 +155,7 @@ port map (
             key_vld_i         => key_vld_i,
             clk_i             => clk_i,
             rst_i             => rst_i,
-            key_ready_o       => key_ready_o_s,
+            key_ready_ke_o    => key_ready_o_s,
             key_exp_enable_i  => key_exp_enable_s,
             for_key_exp_sel_i => for_key_exp_sel_s,              
             key_exp_o         => data_1_s 
@@ -171,15 +169,16 @@ port map (
              clk_i               => clk_i,
              rst_i               => rst_i,
              for_key_exp_sel_o   => for_key_exp_sel_s,
-             for_mux_sel_o       => for_mux_sel_o,
+             for_mux_sel_o       => for_mux_sel_o_s,
              plaintext_ready_o   => plaintext_ready_o_s,
-             key_ready_o         => key_ready_o_s,
-             
-             cipher_text_vld_o   => cipher_text_vld_o,
+             key_ready_c_o       => key_ready_o_s,             
+             cipher_text_vld_o   => cipher_text_vld_o_s,
              key_exp_enable_o    => key_exp_enable_s,
              final_reg_enable    => final_reg_enable,
              reg_enable_o        => reg_enable 
  );  
+ 
+ key_ready_o <= key_ready_o_s;
  
 seq: process(clk_i)
 begin
@@ -191,9 +190,9 @@ end process seq;
 
 
 register_next <= (others => '0') when rst_i = '1' else 
-                  plaintext_i when for_mux_sel_o = "00" and plaintext_vld_i = '1' and plaintext_ready_o_s = '1' else                                    
-                  mix_finish_out when for_mux_sel_o = "01" else
-                  shiftrows_out when for_mux_sel_o = "10" else
+                  plaintext_i when for_mux_sel_o_s = "00" and plaintext_vld_i = '1' and plaintext_ready_o_s = '1' else                                    
+                  mix_finish_out when for_mux_sel_o_s = "01" else
+                  shiftrows_out when for_mux_sel_o_s = "10" and for_mux_sel_o_s /= "01" else
                   register_reg; 
                   
 
@@ -201,8 +200,8 @@ final_next <= (others => '0') when rst_i = '1' else
             addr_out when final_reg_enable = '1' else
             final_reg;
           
-    
+cipher_text_vld_o <= cipher_text_vld_o_s ;  
 plaintext_ready_o <= plaintext_ready_o_s;
             
-cipher_text_o <= final_reg;
+cipher_text_o <= final_reg when cipher_text_ready_i = '1' and cipher_text_vld_o_s = '1' ;
 end behavioral;
