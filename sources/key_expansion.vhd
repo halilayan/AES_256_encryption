@@ -33,7 +33,7 @@ entity key_expansion is
         key_vld_i         : in std_logic;
         clk_i             : in std_logic;
         rst_i             : in std_logic;
-        key_ready_o       : in std_logic := '0';
+        key_ready_ke_o    : in std_logic := '0';
         key_exp_enable_i  : in std_logic;
         for_key_exp_sel_i : in std_logic;
         key_exp_o         : out std_logic_vector (127 downto 0)
@@ -81,20 +81,20 @@ end process;
 
 
 flag_next <=    '0' when rst_i = '1' else 
-                not (flag_reg) when key_vld_i = '1' and key_ready_o = '1'  else
+                not (flag_reg) when key_vld_i = '1' and key_ready_ke_o = '1'  else
                 flag_reg;
              
 key_next (255 downto 128) <=  (others => '0') when rst_i = '1' else
-                               key_i when key_vld_i = '1' and key_ready_o = '1' and flag_reg = '0'  and key_exp_enable_i = '0' else
+                               key_i when key_vld_i = '1' and key_ready_ke_o = '1' and flag_reg = '0'  and key_exp_enable_i = '0' else
                                enc_out (255 downto 128) when for_key_exp_sel_i = '1' else
                                key_reg (255 downto 128);
                                
 key_next (127 downto 0) <= (others => '0') when rst_i = '1' else
-                            key_i when key_vld_i = '1' and key_ready_o = '1' and flag_reg = '1'  and key_exp_enable_i = '0' else
+                            key_i when key_vld_i = '1' and key_ready_ke_o = '1' and flag_reg = '1'  and key_exp_enable_i = '0' else
                             enc_out (127 downto 0) when for_key_exp_sel_i = '1' else
                             key_reg (127 downto 0);  
                                                                                                                  
-round_counter_next <= (others => '0') when rst_i = '1' else
+round_counter_next <= (others => '0') when rst_i = '1' or (key_vld_i = '1' and key_ready_ke_o = '1') else
                  ( round_counter_reg + 1) when key_exp_enable_i = '1' and  for_key_exp_sel_i = '1'  else
                   round_counter_reg; 
                       
