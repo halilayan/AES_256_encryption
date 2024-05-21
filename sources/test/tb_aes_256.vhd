@@ -99,6 +99,7 @@ end process;
  
  plaintext_vld_i <= '1';
  plaintext_i  <= x"00112233445566778899aabbccddeeff";
+ --plaintext_i  <= x"00000000000000000000000000000000";
  wait for clk_i_period;
  plaintext_vld_i <= '0';
  plaintext_i <= (others => '0');
@@ -107,23 +108,30 @@ end process;
  wait for clk_i_period;
  key_vld_i <= '1';
  key_i        <= x"000102030405060708090a0b0c0d0e0f";
+ --key_i        <= x"c0000000000000000000000000000000";
  wait for clk_i_period;
  key_vld_i <= '1';
  key_i         <= x"101112131415161718191a1b1c1d1e1f";
+ --key_i         <= x"00000000000000000000000000000000";
  wait for clk_i_period;
  key_vld_i <= '0';
  key_i <= (others => '0');
 
  
  wait for clk_i_period * 15;
- cipher_text_vld_o <= '1'; 
  cipher_text_ready_i <= '1';
+-- wait for clk_i_period; 
+ wait for clk_i_period;
+ wait for clk_i_period;
+ cipher_text_ready_i <= '0';
  wait for clk_i_period;
  
  ---------------------------------------------------------------------------------
  --2.kez
  ---------------------------------------------------------------------------------
-  plaintext_vld_i <= '1';
+  wait for clk_i_period;
+ plaintext_vld_i <= '1';
+--plaintext_i  <= x"00112233445566778899aabbccddeeff";
  plaintext_i  <= x"00000000000000000000000000000000";
  wait for clk_i_period;
  plaintext_vld_i <= '0';
@@ -132,9 +140,11 @@ end process;
  
  wait for clk_i_period;
  key_vld_i <= '1';
+ --key_i        <= x"000102030405060708090a0b0c0d0e0f";
  key_i        <= x"c0000000000000000000000000000000";
  wait for clk_i_period;
  key_vld_i <= '1';
+ --key_i         <= x"101112131415161718191a1b1c1d1e1f";
  key_i         <= x"00000000000000000000000000000000";
  wait for clk_i_period;
  key_vld_i <= '0';
@@ -142,10 +152,82 @@ end process;
 
  
  wait for clk_i_period * 15;
- cipher_text_vld_o <= '1'; 
  cipher_text_ready_i <= '1';
+-- wait for clk_i_period; 
  wait for clk_i_period;
+ wait for clk_i_period;
+ cipher_text_ready_i <= '0';
+ wait for clk_i_period;
+ 
+ 
+ -----------------------------------------------------------------
+ --3.kez
+ -----------------------------------------------------------------
+ 
+ wait for clk_i_period;
+ plaintext_vld_i <= '1';
+--plaintext_i  <= x"00112233445566778899aabbccddeeff";
+ plaintext_i  <= x"014730f80ac625fe84f026c60bfd547d";
+ wait for clk_i_period;
+ plaintext_vld_i <= '0';
+ plaintext_i <= (others => '0');
+ 
+ 
+ wait for clk_i_period;
+ key_vld_i <= '1';
+ --key_i        <= x"000102030405060708090a0b0c0d0e0f";
+ key_i        <= x"00000000000000000000000000000000";
+ wait for clk_i_period;
+ key_vld_i <= '1';
+ --key_i         <= x"101112131415161718191a1b1c1d1e1f";
+ key_i         <= x"00000000000000000000000000000000";
+ wait for clk_i_period;
+ key_vld_i <= '0';
+ key_i <= (others => '0');
 
+ 
+ wait for clk_i_period * 15;
+ cipher_text_ready_i <= '1';
+-- wait for clk_i_period; 
+ wait for clk_i_period;
+ wait for clk_i_period;
+ cipher_text_ready_i <= '0';
+ wait for clk_i_period;
+ 
+ 
+  -----------------------------------------------------------------
+ --4.kez
+ -----------------------------------------------------------------
+  wait for clk_i_period;
+ plaintext_vld_i <= '1';
+--plaintext_i  <= x"00112233445566778899aabbccddeeff";
+ plaintext_i  <= x"0b24af36193ce4665f2825d7b4749c98";
+ wait for clk_i_period;
+ plaintext_vld_i <= '0';
+ plaintext_i <= (others => '0');
+ 
+ 
+ wait for clk_i_period;
+ key_vld_i <= '1';
+ --key_i        <= x"000102030405060708090a0b0c0d0e0f";
+ key_i        <= x"00000000000000000000000000000000";
+ wait for clk_i_period;
+ key_vld_i <= '1';
+ --key_i         <= x"101112131415161718191a1b1c1d1e1f";
+ key_i         <= x"00000000000000000000000000000000";
+ wait for clk_i_period;
+ key_vld_i <= '0';
+ key_i <= (others => '0');
+
+ 
+ wait for clk_i_period * 15;
+ cipher_text_ready_i <= '1';
+-- wait for clk_i_period; 
+ wait for clk_i_period;
+ wait for clk_i_period;
+ cipher_text_ready_i <= '0';
+ wait for clk_i_period;
+ 
  wait;
  end process;
  
